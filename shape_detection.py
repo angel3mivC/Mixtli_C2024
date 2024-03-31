@@ -1,24 +1,27 @@
 import cv2
 import numpy as np
 
-cv2.namedWindow("HSV Configuration")
-cv2.createTrackbar("L-H", "HSV Configuration", 0, 255, lambda x:None)
-cv2.createTrackbar("L-S", "HSV Configuration", 121, 255, lambda x:None)
-cv2.createTrackbar("L-V", "HSV Configuration", 109, 255, lambda x:None)
-cv2.createTrackbar("U-H", "HSV Configuration", 255, 255, lambda x:None)
-cv2.createTrackbar("U-S", "HSV Configuration", 255, 255, lambda x:None)
-cv2.createTrackbar("U-V", "HSV Configuration", 243, 255, lambda x:None)
+cv2.namedWindow("Shape detection", cv2.WINDOW_AUTOSIZE)
+
+cv2.createTrackbar("Low Hue", "Shape detection", 0, 180, lambda x:None)
+cv2.createTrackbar("Upper Hue", "Shape detection", 180, 180, lambda x:None)
+cv2.createTrackbar("Low Saturation", "Shape detection", 0, 255, lambda x:None)
+cv2.createTrackbar("Upper Saturation", "Shape detection", 30, 255, lambda x:None)
+cv2.createTrackbar("Low Value", "Shape detection", 200, 255, lambda x:None)
+cv2.createTrackbar("Upper Value", "Shape detection", 255, 255, lambda x:None)
+
+cv2.setWindowProperty("Shape detection", cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_FULLSCREEN)
 
 capture = cv2.VideoCapture(0)
 font = cv2.FONT_HERSHEY_COMPLEX
 kernel = np.ones((5,5), np.uint8)
 
-l_h = cv2.getTrackbarPos("L-H", "HSV Configuration")
-l_s = cv2.getTrackbarPos("L-S", "HSV Configuration")
-l_v = cv2.getTrackbarPos("L-V", "HSV Configuration")
-u_h = cv2.getTrackbarPos("U-H", "HSV Configuration")
-u_s = cv2.getTrackbarPos("U-S", "HSV Configuration")
-u_v = cv2.getTrackbarPos("U-V", "HSV Configuration")
+l_h = cv2.getTrackbarPos("Low Hue", "Shape detection") #Minimimum color range detected
+u_h = cv2.getTrackbarPos("Upper Hue", "Shape detection") #Maximum color range detected
+l_s = cv2.getTrackbarPos("Low Saturation", "Shape detection") #Minimimum saturation range detected
+u_s = cv2.getTrackbarPos("Upper Saturation", "Shape detection") #Maximum saturation range detected
+l_v = cv2.getTrackbarPos("Low Value", "Shape detection") #Minimimum color intensity detected
+u_v = cv2.getTrackbarPos("Upper Value", "Shape detection") #Maximum color intensity detected
 
 lower_red = np.array([l_h, l_s, l_v])
 upper_red = np.array([u_h, u_s, u_v])
@@ -91,8 +94,11 @@ while True:
             elif len(approx) > 10:
                 cv2.putText(frame, "Circle", (x, y), font, 1, (0,0,0))
 
-    cv2.imshow("Capture", frame)
-    cv2.imshow("Mask", mask)
+    # cv2.imshow("Capture", frame)
+    # cv2.imshow("Mask", mask)
+
+    canvas = np.hstack((frame, cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)))
+    cv2.imshow("Shape detection", canvas)
 
     if cv2.waitKey(1) == 27: break
 
