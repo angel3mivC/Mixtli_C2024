@@ -14,13 +14,16 @@ def get_sensors(mask):
             sensors.append(0)
     return sensors
 
-cv2.namedWindow("Line")
-cv2.createTrackbar("L-H", "Line", 0, 180, lambda x:None)
-cv2.createTrackbar("L-S", "Line", 0, 255, lambda x:None)
-cv2.createTrackbar("L-V", "Line", 200, 255, lambda x:None)
-cv2.createTrackbar("U-H", "Line", 180, 180, lambda x:None)
-cv2.createTrackbar("U-S", "Line", 30, 255, lambda x:None)
-cv2.createTrackbar("U-V", "Line", 255, 255, lambda x:None)
+cv2.namedWindow("Border detection", cv2.WINDOW_AUTOSIZE)
+
+cv2.createTrackbar("Low Hue", "Border detection", 0, 180, lambda x:None)
+cv2.createTrackbar("Upper Hue", "Border detection", 180, 180, lambda x:None)
+cv2.createTrackbar("Low Saturation", "Border detection", 0, 255, lambda x:None)
+cv2.createTrackbar("Upper Saturation", "Border detection", 30, 255, lambda x:None)
+cv2.createTrackbar("Low Value", "Border detection", 200, 255, lambda x:None)
+cv2.createTrackbar("Upper Value", "Border detection", 255, 255, lambda x:None)
+
+cv2.setWindowProperty("Border detection", cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_FULLSCREEN)
 
 # threshold = 0.2
 # totalPixels = 57600
@@ -40,12 +43,12 @@ senstivity = 3
 fspeed = 15
 
 while True:
-    l_h = cv2.getTrackbarPos("L-H", "Line")
-    l_s = cv2.getTrackbarPos("L-S", "Line")
-    l_v = cv2.getTrackbarPos("L-V", "Line")
-    u_h = cv2.getTrackbarPos("U-H", "Line")
-    u_s = cv2.getTrackbarPos("U-S", "Line")
-    u_v = cv2.getTrackbarPos("U-V", "Line")
+    l_h = cv2.getTrackbarPos("Low Hue", "Border detection") #Minimimum color range detected
+    u_h = cv2.getTrackbarPos("Upper Hue", "Border detection") #Maximum color range detected
+    l_s = cv2.getTrackbarPos("Low Saturation", "Border detection") #Minimimum saturation range detected
+    u_s = cv2.getTrackbarPos("Upper Saturation", "Border detection") #Maximum saturation range detected
+    l_v = cv2.getTrackbarPos("Low Value", "Border detection") #Minimimum color intensity detected
+    u_v = cv2.getTrackbarPos("Upper Value", "Border detection") #Maximum color intensity detected
 
     _, frame = capture.read()
     # frame = me.get_frame_read().frame
@@ -57,11 +60,11 @@ while True:
     upper = np.array([u_h, u_s, u_v])
     mask = cv2.inRange(hsv, lower, upper)
 
-    contours, _ =cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    cv2.drawContours(frame, contours, -1, (255,0,0), 5)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    cv2.drawContours(frame, contours, -1, (255,0,0), 2)
 
     if contours:
-        biggest = max(contours, key=cv2.contourArea)
+        biggest = max(contours, key = cv2.contourArea)
         x, y, w, h = cv2.boundingRect(biggest)
         cx = x + w//2
         cy = y + h//2
@@ -90,11 +93,12 @@ while True:
 
     # me.send_rc_control(lr, fspeed, 0, curve)
 
+    canvas = np.hstack((frame, cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)))
+    cv2.imshow("Border detection", canvas)
+    # cv2.imshow("Frame", frame)
+    # cv2.imshow("Filter", mask)
 
-    cv2.imshow("Frame", frame)
-    cv2.imshow("Mask", mask)
-
-    if cv2.waitKey(1000) == 27: break
+    if cv2.waitKey(1) == 27: break
 
 # me.land()
 
