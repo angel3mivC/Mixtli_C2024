@@ -2,37 +2,34 @@ import cv2
 import numpy as np
 
 cv2.namedWindow("HSV Configuration")
-cv2.createTrackbar("L-H", "HSV Configuration", 0, 255, lambda x:None)
+cv2.createTrackbar("L-H", "HSV Configuration", 0, 179, lambda x:None)
 cv2.createTrackbar("L-S", "HSV Configuration", 121, 255, lambda x:None)
 cv2.createTrackbar("L-V", "HSV Configuration", 109, 255, lambda x:None)
-cv2.createTrackbar("U-H", "HSV Configuration", 255, 255, lambda x:None)
+cv2.createTrackbar("U-H", "HSV Configuration", 179, 179, lambda x:None)
 cv2.createTrackbar("U-S", "HSV Configuration", 255, 255, lambda x:None)
 cv2.createTrackbar("U-V", "HSV Configuration", 243, 255, lambda x:None)
 
-capture = cv2.VideoCapture(0)
-font = cv2.FONT_HERSHEY_COMPLEX
-kernel = np.ones((5,5), np.uint8)
+def shape_detection(frame):
+    
+    l_h = cv2.getTrackbarPos("L-H", "HSV Configuration")
+    l_s = cv2.getTrackbarPos("L-S", "HSV Configuration")
+    l_v = cv2.getTrackbarPos("L-V", "HSV Configuration")
+    u_h = cv2.getTrackbarPos("U-H", "HSV Configuration")
+    u_s = cv2.getTrackbarPos("U-S", "HSV Configuration")
+    u_v = cv2.getTrackbarPos("U-V", "HSV Configuration")
 
-l_h = cv2.getTrackbarPos("L-H", "HSV Configuration")
-l_s = cv2.getTrackbarPos("L-S", "HSV Configuration")
-l_v = cv2.getTrackbarPos("L-V", "HSV Configuration")
-u_h = cv2.getTrackbarPos("U-H", "HSV Configuration")
-u_s = cv2.getTrackbarPos("U-S", "HSV Configuration")
-u_v = cv2.getTrackbarPos("U-V", "HSV Configuration")
+    # font = cv2.FONT_HERSHEY_COMPLEX
+    kernel = np.ones((5,5), np.uint8)
+    lower = np.array([l_h, l_s, l_v])
+    upper = np.array([u_h, u_s, u_v])
 
-lower_red = np.array([l_h, l_s, l_v])
-upper_red = np.array([u_h, u_s, u_v])
-
-vertex_x = np.empty(4, dtype=np.int16)
-vertex_y = np.empty(4, dtype=np.int16)
-aux = 0
-
-while True:
-    _, frame = capture.read()
+    vertex_x = np.empty(4, dtype=np.int16)
+    vertex_y = np.empty(4, dtype=np.int16)
+    aux = 0
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    mask = cv2.inRange(hsv, lower_red, upper_red)
+    mask = cv2.inRange(hsv, lower, upper)
     mask = cv2.erode(mask, kernel)
 
     contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -48,7 +45,7 @@ while True:
             y = approx.ravel()[1]
 
             if len(approx) == 3:
-                cv2.putText(frame, "Triangle", (x, y), font, 1, (0,0,0))
+                cv2.putText(frame, "Triangle", (x, y), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,0))
             elif len(approx) == 4:
 
                 for i in range(4):
@@ -80,21 +77,15 @@ while True:
                 lower_difference = abs(vertex_y[1] - vertex_y[3])
 
                 if upper_difference < 50 and lower_difference < 50:
-                    cv2.putText(frame, "Square", (x, y), font, 1, (0,0,0))
+                    cv2.putText(frame, "Square", (x, y), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,0))
                 else:
-                    cv2.putText(frame, "Rhombus", (x, y), font, 1, (0,0,0))
+                    cv2.putText(frame, "Rhombus", (x, y), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,0))
 
             elif len(approx) == 5:
-                cv2.putText(frame, "Pentagon", (x, y), font, 1, (0,0,0))
+                cv2.putText(frame, "Pentagon", (x, y), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,0))
             elif len(approx) == 10:
-                cv2.putText(frame, "Star", (x, y), font, 1, (0,0,0))
+                cv2.putText(frame, "Star", (x, y), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,0))
             elif len(approx) > 10:
-                cv2.putText(frame, "Circle", (x, y), font, 1, (0,0,0))
-
-    cv2.imshow("Capture", frame)
-    cv2.imshow("Mask", mask)
-
-    if cv2.waitKey(1) == 27: break
-
-capture.release()
-cv2.destroyAllWindows()
+                cv2.putText(frame, "Circle", (x, y), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,0))
+    
+    return frame
