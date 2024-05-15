@@ -1,46 +1,49 @@
-from djitellopy import Tello
 import cv2
+from djitellopy import tello
 from shape_detection import shape_detection
-import time
+from collections import Counter
 
-# Crear instancia del dron y conectarse
-tello = Tello()
-tello.connect()
+# me = tello.Tello()
+# me.connect()
+# me.takeoff()
+# me.streamon()
+# print(me.get_battery())
 
-time.sleep(2)
-# Despegar
-tello.takeoff()
+capture = cv2.VideoCapture(0)
+detected_shapes = 0
+shapes = []
 
-# Iniciar el streaming de video
-tello.streamon()
-
-# Variable para controlar el bucle
-keep_flying = True
-# Variable para controlar las acciones del dron
-movement_done = False
-
-# Bucle principal para mostrar el video y controlar el dron
-while keep_flying:
-    # Obtener el frame actual
-    frame = tello.get_frame_read().frame
-    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-    frame = shape_detection(frame)
-    cv2.imshow("Tello Camera", frame)
-    # cv2.imshow("Shape detector", frame1)
+while True:
+    _, frame = capture.read()
+    # frame = me.get_frame_read().frame
+    frame = cv2.resize(frame, (480, 360))
     
-    # Control del dron: Solo se ejecuta una vez
-    if not movement_done:
-        tello.move_forward(100)
-        tello.rotate_counter_clockwise(90)
-        tello.move_left(50)
-        tello.land()  # Aterrizar
-        movement_done = True
-    
-    # Esperar por una tecla para salir
-    key = cv2.waitKey(1)  # Espera 1 ms para salir del bucle
-    if key == 27:  # Salir si se presiona 'ESC'
-        keep_flying = False
+    shape = shape_detection(frame)
+    shapes.append(shape)
+    detected_shapes += 1
 
-# Detener el streaming y cerrar ventanas
-tello.streamoff()
+    if detected_shapes == 30:
+        count = Counter(shapes)
+        most_common_shape = max(count, key=count.get)
+
+        # print(most_common_shape)
+
+        # if most_common_shape == "square":
+            # me.rotate_clockwise(270)
+            # me.rotate_clockwise(-90)
+        # elif most_common_shape == "pentagon":
+            # me.rotate_clockwise(90)
+        #elif most_common_shape == "circle":
+            # me.move_forward(20)
+
+        shapes = []
+        detected_shapes = 0
+
+    cv2.imshow("Capture", frame)
+
+    if cv2.waitKey(1) == 27:
+        # me.send_rc_control(0,0,0,0)
+        # me.land()
+        break
+
 cv2.destroyAllWindows()
