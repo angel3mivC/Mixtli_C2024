@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.I.G.S.</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" sizes ="32x32" href="logo.png">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div id="main" class="main">
+        <div id="height" class="information"> 
+            Height 
+            <div id="height_text">1.5 m</div>
+        </div>
+        <div id="containers">
+            <div id="camera_container" class="camera_container">
+                <video id="drone_video" autoplay muted playsinline></video>
+                <!-- <img id="drone_video" src="http://192.168.10.2:5000/video_feed" alt="Drone video feed"> -->
+            </div>
+            <div id="buttons" class="buttons">
+                <button id="land" onclick="land()">LAND</button>
+                
+                <button id="emergency_stop" onclick="emergency_stop()">EMERGENCY STOP</button>
+
+                <button id="start" onclick="start()">START</button>
+                
+                <button id="onair">ON AIR</button>
+            </div>
+        </div>
+        <div id="height" class="information">
+            Speed
+            <div id="speed_text">3 m/s</div>
+        </div>
+    </div>
+</body>
+</html>
